@@ -25,7 +25,7 @@ module ActsAsTaggableOn::Taggable::TaggedWithQuery
     end
 
     def tag_match_type(tag)
-      matches_attribute = tag_arel_table[:name]
+      matches_attribute = tag_arel_table[:name_es]
       matches_attribute = matches_attribute.lower unless ActsAsTaggableOn.strict_case_match
 
       if options[:wild].present?
@@ -36,7 +36,7 @@ module ActsAsTaggableOn::Taggable::TaggedWithQuery
     end
 
     def tags_match_type
-      matches_attribute = tag_arel_table[:name]
+      matches_attribute = tag_arel_table[:name_es]
       matches_attribute = matches_attribute.lower unless ActsAsTaggableOn.strict_case_match
 
       if options[:wild].present?

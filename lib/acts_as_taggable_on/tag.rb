@@ -9,9 +9,12 @@ module ActsAsTaggableOn
 
     ### VALIDATIONS:
 
-    validates_presence_of :name
-    validates_uniqueness_of :name, if: :validates_name_uniqueness?, case_sensitive: true
-    validates_length_of :name, maximum: 255
+    # validates_presence_of :name
+    # validates_uniqueness_of :name, if: :validates_name_uniqueness?, case_sensitive: true
+    # validates_length_of :name, maximum: 255
+    validates_presence_of :name_es
+    validates_uniqueness_of :name_es, if: :validates_name_uniqueness?, case_sensitive: true
+    validates_length_of :name_es, maximum: 255
 
     # monkey patch this method if don't need name uniqueness validation
     def validates_name_uniqueness?
@@ -24,9 +27,9 @@ module ActsAsTaggableOn
 
     def self.named(name)
       if ActsAsTaggableOn.strict_case_match
-        where(["name = #{binary}?", as_8bit_ascii(name)])
+        where(["name_es = #{binary}?", as_8bit_ascii(name)])
       else
-        where(['LOWER(name) = LOWER(?)', as_8bit_ascii(unicode_downcase(name))])
+        where(['LOWER(name_es) = LOWER(?)', as_8bit_ascii(unicode_downcase(name))])
       end
     end
 
@@ -38,13 +41,13 @@ module ActsAsTaggableOn
     end
 
     def self.named_like(name)
-      clause = ["name #{ActsAsTaggableOn::Utils.like_operator} ? ESCAPE '!'", "%#{ActsAsTaggableOn::Utils.escape_like(name)}%"]
+      clause = ["name_es #{ActsAsTaggableOn::Utils.like_operator} ? ESCAPE '!'", "%#{ActsAsTaggableOn::Utils.escape_like(name)}%"]
       where(clause)
     end
 
     def self.named_like_any(list)
       clause = list.map { |tag|
-        sanitize_sql(["name #{ActsAsTaggableOn::Utils.like_operator} ? ESCAPE '!'", "%#{ActsAsTaggableOn::Utils.escape_like(tag.to_s)}%"])
+        sanitize_sql(["name_es #{ActsAsTaggableOn::Utils.like_operator} ? ESCAPE '!'", "%#{ActsAsTaggableOn::Utils.escape_like(tag.to_s)}%"])
       }.join(' OR ')
       where(clause)
     end
@@ -61,7 +64,7 @@ module ActsAsTaggableOn
       if ActsAsTaggableOn.strict_case_match
         self.find_or_create_all_with_like_by_name([name]).first
       else
-        named_like(name).first || create(name: name)
+        named_like(name).first || create(name_es: name)
       end
     end
 
@@ -76,7 +79,7 @@ module ActsAsTaggableOn
           tries ||= 3
           comparable_tag_name = comparable_name(tag_name)
           existing_tag = existing_tags.find { |tag| comparable_name(tag.name) == comparable_tag_name }
-          existing_tag || create(name: tag_name)
+          existing_tag || create(name_es: tag_name)
         rescue ActiveRecord::RecordNotUnique
           if (tries -= 1).positive?
             ActiveRecord::Base.connection.execute 'ROLLBACK'
@@ -129,9 +132,9 @@ module ActsAsTaggableOn
 
       def sanitize_sql_for_named_any(tag)
         if ActsAsTaggableOn.strict_case_match
-          sanitize_sql(["name = #{binary}?", as_8bit_ascii(tag)])
+          sanitize_sql(["name_es = #{binary}?", as_8bit_ascii(tag)])
         else
-          sanitize_sql(['LOWER(name) = LOWER(?)', as_8bit_ascii(unicode_downcase(tag))])
+          sanitize_sql(['LOWER(name_es) = LOWER(?)', as_8bit_ascii(unicode_downcase(tag))])
         end
       end
     end
